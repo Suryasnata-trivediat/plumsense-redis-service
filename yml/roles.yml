@@ -1,0 +1,37 @@
+syncRedisRole:
+  Type: AWS::IAM::Role
+  Properties:
+    RoleName: ${self:custom.servicename}-${self:provider.stage}-syncRedis
+    ManagedPolicyArns:
+      - "arn:aws:iam::aws:policy/AWSLambda_FullAccess"
+      - "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
+      - "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+    AssumeRolePolicyDocument:
+      Version: '2012-10-17'
+      Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+              - lambda.amazonaws.com
+          Action: sts:AssumeRole
+    Policies:
+      - PolicyName: allow-access-kinesisStream
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - kinesis:*
+              Resource: ${file(./yml/referenceVariable.yml):SyncRedisStreamARN}
+      - PolicyName: ssm-access
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action: 'ssm:GetParameters'
+              Resource:
+                - ${file(./yml/referenceVariable.yml):UserParameterRef.ARN}
+                - ${file(./yml/referenceVariable.yml):PasswordParameterRef.ARN}
+                - ${file(./yml/referenceVariable.yml):DBnameParameterRef.ARN}
+                - ${file(./yml/referenceVariable.yml):HostParameterRef.ARN}
+                - ${file(./yml/referenceVariable.yml):PortParameterRef.ARN}

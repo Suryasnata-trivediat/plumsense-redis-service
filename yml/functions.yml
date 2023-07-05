@@ -1,0 +1,34 @@
+functions:
+  syncRedis:
+    role: syncRedisRole
+    handler: src/lambdas/syncRedis.handler
+    memorySize: 128
+    description: Plumsense - Sync Redis
+    layers:
+      # - arn:aws:lambda:${self:provider.region}:${self:custom.account}:layer:mysqlLayer:1
+      - arn:aws:lambda:${self:provider.region}:${self:custom.account}:layer:node-ioredis:1
+    package:
+      individually: true
+      patterns:
+        - '!./**'
+        - 'src/core/db.js'
+        - 'src/lambdas/syncRedis.js'
+    events:
+      - stream:
+          type: kinesis
+          arn: ${file(./yml/referenceVariable.yml):SyncRedisStreamARN} 
+          startingPosition: LATEST
+
+  syncData:
+    role: syncRedisRole
+    handler: src/lambdas/syncData.handler
+    memorySize: 128
+    description: Plumsense - Sync syncData
+    layers:
+      - arn:aws:lambda:${self:provider.region}:${self:custom.account}:layer:mysqlLayer:1
+    package:
+      individually: true
+      patterns:
+        - '!./**'
+        - 'src/core/db.js'
+        - 'src/lambdas/syncData.js'
