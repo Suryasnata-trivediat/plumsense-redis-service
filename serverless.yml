@@ -1,0 +1,48 @@
+service: redis-service
+frameworkVersion: '3'
+
+custom:
+  account: ${file(./yml/referenceVariable.yml):AWSAccount}
+  servicename: ${self:service}
+  JWTAuthorizerID: ${file(./yml/referenceVariable.yml):ApiGatewayAuthorizerId}
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  stage: '${opt:stage, self:provider.stage}'
+  region: '${opt:region, self:provider.region}'
+  apiGateway:
+    restApiId: ${file(./yml/referenceVariable.yml):ApiGatewayId}
+    restApiRootResourceId: ${file(./yml/referenceVariable.yml):ApiGatewayRootResourceId}
+  logRetentionInDays: 3
+  endpointType: REGIONAL
+  vpc: 
+    securityGroupIds:
+      - ${file(./yml/referenceVariable.yml):VPCSecurityGroupId}
+    subnetIds:
+      - ${file(./yml/referenceVariable.yml):VPCSubnetId1}
+      - ${file(./yml/referenceVariable.yml):VPCSubnetId2}
+  environment:
+    REGION: ${self:provider.region}
+    SSM_USERNAME_PATH: ${file(./yml/referenceVariable.yml):UserParameterRef.Name}
+    SSM_PASSWORD_PATH: ${file(./yml/referenceVariable.yml):PasswordParameterRef.Name}
+    SSM_PORT_PATH: ${file(./yml/referenceVariable.yml):PortParameterRef.Name}
+    SSM_HOST_PATH: ${file(./yml/referenceVariable.yml):HostParameterRef.Name}
+    SSM_DBNAME_PATH: ${file(./yml/referenceVariable.yml):DBnameParameterRef.Name}
+    REDIS_HOST: ${file(./yml/referenceVariable.yml):Redis.Host}
+    REDIS_PORT: ${file(./yml/referenceVariable.yml):Redis.Port}
+    REDIS_PASSWORD: ${file(./yml/referenceVariable.yml):Redis.Password}
+  deploymentBucket:
+    name: ${file(./yml/referenceVariable.yml):ServerlessDeploymentBucketName}
+
+functions: ${file(./yml/functions.yml):functions}
+
+resources:
+  Resources:
+    syncRedisRole: ${file(./yml/roles.yml):syncRedisRole}
+
+    SyncRedisStream:
+      Type: AWS::Kinesis::Stream
+      Properties:
+        Name: ${self:custom.servicename}-${self:provider.stage}-test-SyncRedisStream
+        ShardCount: 1

@@ -1,0 +1,43 @@
+AWSAccount: ${cf:common-service-${self:provider.stage}.AWSAccount}
+ApiGatewayAuthorizerId: ${cf:common-service-${self:provider.stage}.ApiGatewayAuthorizerId}
+ApiGatewayId: ${cf:common-service-${self:provider.stage}.ApiGatewayId}
+ApiGatewayRootResourceId: ${cf:common-service-${self:provider.stage}.ApiGatewayRootResourceId}
+VPCSecurityGroupId: ${cf:common-service-${self:provider.stage}.VPCSecurityGroupId}
+VPCSubnetId1: ${cf:common-service-${self:provider.stage}.VPCSubnetId1}
+VPCSubnetId2: ${cf:common-service-${self:provider.stage}.VPCSubnetId2}
+ServerlessDeploymentBucketName: ${cf:common-service-${self:provider.stage}.ServerlessDeploymentBucketName}
+######################################### BASE ARNs #########################################
+SSMBaseARN: arn:aws:ssm:${self:provider.region}:${self:custom.account}:parameter
+EventbusBaseARN: arn:aws:events:${self:provider.region}:${self:custom.account}:event-bus/
+DDBBaseARN: "arn:aws:dynamodb:${self:provider.region}:${self:custom.account}:table/"
+KinesisStreamBaseARN: "arn:aws:kinesis:${self:provider.region}:${self:custom.account}:stream/"
+######################################### SSM #########################################
+HostParameterRef:
+  Name: ${cf:common-service-${self:provider.stage}.HostParameterName}
+  ARN: ${file(./yml/referenceVariable.yml):SSMBaseARN}${cf:common-service-${self:provider.stage}.HostParameterName}
+
+UserParameterRef:
+  Name: ${cf:common-service-${self:provider.stage}.UserParameterName}
+  ARN: ${file(./yml/referenceVariable.yml):SSMBaseARN}${cf:common-service-${self:provider.stage}.UserParameterName}
+
+DBnameParameterRef:
+  Name: ${cf:common-service-${self:provider.stage}.DBnameParameterName}
+  ARN: ${file(./yml/referenceVariable.yml):SSMBaseARN}${cf:common-service-${self:provider.stage}.DBnameParameterName}
+
+PasswordParameterRef:
+  Name: ${cf:common-service-${self:provider.stage}.PasswordParameterName}
+  ARN: ${file(./yml/referenceVariable.yml):SSMBaseARN}${cf:common-service-${self:provider.stage}.PasswordParameterName}
+
+PortParameterRef:
+  Name: ${cf:common-service-${self:provider.stage}.PortParameterName}
+  ARN: ${file(./yml/referenceVariable.yml):SSMBaseARN}${cf:common-service-${self:provider.stage}.PortParameterName}
+######################################### Event bridge #########################################
+APIEventbusRef:
+  Name: ${cf:common-service-${self:provider.stage}.EventBus}
+  ARN: ${file(./yml/referenceVariable.yml):EventbusBaseARN}${cf:common-service-${self:provider.stage}.EventBus}
+######################################### Redis #########################################
+Redis: 
+  Host: ${cf:common-service-${self:provider.stage}.REDISHOST}
+  Port: ${cf:common-service-${self:provider.stage}.REDISPORT}
+  Password: ${cf:common-service-${self:provider.stage}.REDISPASSWORD}
+SyncRedisStreamARN: ${file(./yml/referenceVariable.yml):KinesisStreamBaseARN}redis-service-beta-test-SyncRedisStream
